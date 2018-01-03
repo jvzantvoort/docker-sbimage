@@ -1,0 +1,140 @@
+#!/bin/bash
+#===============================================================================
+#
+#         FILE:  sbbuild
+#
+#        USAGE:  sbbuild
+#
+#  DESCRIPTION:  $description
+#
+#      OPTIONS:  ---
+# REQUIREMENTS:  ---
+#         BUGS:  ---
+#        NOTES:  ---
+#       AUTHOR:  John van Zantvoort (jvzantvoort), John@vanzantvoort.org
+#      COMPANY:  (none)
+#      CREATED:  03-Jan-2018
+#===============================================================================
+
+declare -r CONST_SCRIPTPATH="$(readlink -f $0)"
+declare -r CONST_SCRIPTNAME="$(basename $CONST_SCRIPTPATH .sh)"
+declare -r CONST_SCRIPTDIR="$(dirname $CONST_SCRIPTPATH)"
+declare -r CONST_FACILITY="local0"
+
+function logging()
+{
+  local priority="$1"; shift
+  logger -p ${CONST_FACILITY}.${priority} -i -s -t "${CONST_SCRIPTNAME}" -- "${priority} $@"
+}
+
+function logging_err()
+{
+  logging "err" "$@"
+}
+
+function logging_info()
+{
+  logging "info" "$@"
+}
+
+function script_exit()
+{
+  local STRING="$1"
+  local RETV="${2:-0}"
+  if [ "$RETV" = "0" ]
+  then
+    logging_info "$STRING"
+  else
+    logging_err "$STRING"
+  fi
+  exit $RETV
+}
+
+function pathmunge()
+{
+  [ -d "$1" ] || return
+
+  EGREP="$(which --skip-alias egrep)"
+  [[ -z "${EGREP}" ]] && script_exit "ERROR: egrep not found" 1
+
+  if echo $PATH | $EGREP -q "(^|:)$1($|:)"
+  then
+    return
+  fi
+
+  if [ "$2" = "after" ]
+  then
+      PATH=$PATH:$1
+  else
+      PATH=$1:$PATH
+  fi
+}
+
+#===  FUNCTION  ================================================================
+#         NAME:  mkstaging_area
+#  DESCRIPTION:  Creates a temporary staging area and set the variable
+#                $STAGING_AREA to point to it
+#   PARAMETERS:  STRING, mktemp template (optional)
+#      RETURNS:  0, oke
+#                1, not oke
+#===============================================================================
+function mkstaging_area()
+{
+  local TEMPLATE RETV
+  TEMPLATE="${HOME}/tmp/sbimage.XXXXXXXX"
+
+  [[ -z "$1" ]] || TEMPLATE="$1"
+
+  STAGING_AREA=$(mktemp -d ${TEMPLATE})
+  RETV=$?
+
+  if [ $RETV == 0 ]
+  then
+    return 0
+  else
+    remark "mkstaging_area failed $RETV"
+    return 1
+  fi
+
+  return 0
+} # end: mkstaging_area
+
+#------------------------------------------------------------------------------#
+#                                    Main                                      #
+#------------------------------------------------------------------------------#
+
+logging_info "start"
+
+# setup path
+#---------------------------------------
+pathmunge "${CONST_SCRIPTDIR}" "after"
+export PATH
+
+DOCKERFILE=$1; shift
+IMAGENAME=$1; shift
+IMAGEVERSION=$1; shift
+
+
+[[ -z "${DOCKERFILE}" ]] && script_exit "${CONST_SCRIPTPATH} dockerfile" 1
+[[ -z "$IMAGENAME" ]] && IMAGENAME=$(sbname)
+[[ -z "$IMAGEVERSION" ]] && IMAGEVERSION=$(sbversion)
+
+[[ -e "${DOCKERFILE}" ]] || script_exit "${CONST_SCRIPTPATH} dockerfile ${DOCKERFILE} does not exist" 2
+
+mkstaging_area
+
+[[ -z "${STAGING_AREA}" ]] && script_exit "failed to create staging area" 3
+[[ -d "${STAGING_AREA}" ]] || script_exit "staging area ${STAGING_AREA} does not exist or is not a directory" 4
+
+cp "${DOCKERFILE}" "${STAGING_AREA}/Dockerfile"
+cp "requirements.txt"  "${STAGING_AREA}/requirements.txt"
+cp "entrypoint.sh" "${STAGING_AREA}/entrypoint.sh"
+
+pushd "${STAGING_AREA}"
+docker build -t ${IMAGENAME}:${IMAGEVERSION} --file Dockerfile --rm .
+popd
+
+logging_info "end"
+#------------------------------------------------------------------------------#
+#                                  The End                                     #
+#------------------------------------------------------------------------------#
