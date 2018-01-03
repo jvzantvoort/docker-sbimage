@@ -1,0 +1,66 @@
+#!/bin/bash
+#===============================================================================
+#
+#         FILE:  sblist
+#
+#        USAGE:  sblist
+#
+#  DESCRIPTION:  $description
+#
+#      OPTIONS:  ---
+# REQUIREMENTS:  ---
+#         BUGS:  ---
+#        NOTES:  ---
+#       AUTHOR:  John van Zantvoort (jvzantvoort), John@vanzantvoort.org
+#      COMPANY:  (none)
+#      CREATED:  03-Jan-2018
+#===============================================================================
+
+declare -r CONST_SCRIPTPATH="$(readlink -f $0)"
+declare -r CONST_SCRIPTNAME="$(basename $CONST_SCRIPTPATH .sh)"
+declare -r CONST_SCRIPTDIR="$(dirname $CONST_SCRIPTPATH)"
+
+function pathmunge()
+{
+  [ -d "$1" ] || return
+
+  EGREP="$(which --skip-alias egrep)"
+  [[ -z "${EGREP}" ]] && script_exit "ERROR: egrep not found" 1
+
+  if echo $PATH | $EGREP -q "(^|:)$1($|:)"
+  then
+    return
+  fi
+
+  if [ "$2" = "after" ]
+  then
+      PATH=$PATH:$1
+  else
+      PATH=$1:$PATH
+  fi
+}
+
+#------------------------------------------------------------------------------#
+#                                    Main                                      #
+#------------------------------------------------------------------------------#
+
+pathmunge "${CONST_SCRIPTDIR}/bin" "after"
+export PATH
+
+REPOSITORY="$1"; shift
+
+if [ "${REPOSITORY}" = "help" -o -z "${REPOSITORY}" ]
+then
+  echo "USAGE" 
+  echo "   ${CONST_SCRIPTPATH} REPOSITORY"
+  echo
+  echo "list REPOSITORY:TAG and IMAGE ID fields of repositories matching REPOSITORY"
+  exit 0
+
+fi
+
+docker images | awk -v repo="${REPOSITORY}" '$1 ~ repo { print $3; printf "%s:%s\n", $1, $2  }' | sort -u
+
+#------------------------------------------------------------------------------#
+#                                  The End                                     #
+#------------------------------------------------------------------------------#

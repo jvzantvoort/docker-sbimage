@@ -1,0 +1,10 @@
+FROM python:2.7.13
+ADD requirements.txt /tmp/requirements.txt
+RUN apt-get update && apt-get install -y libldap2-dev libsasl2-dev
+RUN pip install -r /tmp/requirements.txt
+RUN adduser --uid 1085 --disabled-password --gecos '' jvzantvoort
+ARG user
+USER jvzantvoort
+ADD . /code
+WORKDIR /code
+ENTRYPOINT ["/code/entrypoint.sh"]
