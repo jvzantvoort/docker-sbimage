@@ -1,9 +1,9 @@
 #!/bin/bash
 #===============================================================================
 #
-#         FILE:  sblist
+#         FILE:  sbupdate
 #
-#        USAGE:  sblist
+#        USAGE:  sbupdate
 #
 #  DESCRIPTION:  $description
 #
@@ -19,6 +19,37 @@
 declare -r CONST_SCRIPTPATH="$(readlink -f $0)"
 declare -r CONST_SCRIPTNAME="$(basename $CONST_SCRIPTPATH .sh)"
 declare -r CONST_SCRIPTDIR="$(dirname $CONST_SCRIPTPATH)"
+declare -r CONST_FACILITY="local0"
+declare -r CONST_REGISTRY="registry.int.vanzantvoort.org:5000"
+
+function logging()
+{
+  local priority="$1"; shift
+  logger -p ${CONST_FACILITY}.${priority} -i -s -t "${CONST_SCRIPTNAME}" -- "${priority} $@"
+}
+
+function logging_err()
+{
+  logging "err" "$@"
+}
+
+function logging_info()
+{
+  logging "info" "$@"
+}
+
+function script_exit()
+{
+  local STRING="$1"
+  local RETV="${2:-0}"
+  if [ "$RETV" = "0" ]
+  then
+    logging_info "$STRING"
+  else
+    logging_err "$STRING"
+  fi
+  exit $RETV
+}
 
 function pathmunge()
 {
@@ -44,23 +75,28 @@ function pathmunge()
 #                                    Main                                      #
 #------------------------------------------------------------------------------#
 
+logging_info "start"
+
+# setup path
+#---------------------------------------
 pathmunge "${CONST_SCRIPTDIR}" "after"
 export PATH
 
-REPOSITORY="$1"; shift
+DOCKERFILE=$1; shift
+IMAGENAME=$1; shift
+IMAGEVERSION=$1; shift
 
-if [ "${REPOSITORY}" = "help" -o -z "${REPOSITORY}" ]
-then
-  echo "USAGE" 
-  echo "   ${CONST_SCRIPTPATH} REPOSITORY"
-  echo
-  echo "list REPOSITORY:TAG and IMAGE ID fields of repositories matching REPOSITORY"
-  exit 0
 
-fi
+[[ -z "${DOCKERFILE}" ]] && script_exit "${CONST_SCRIPTPATH} dockerfile" 1
+[[ -z "$IMAGENAME" ]] && IMAGENAME=$(sbname)
+[[ -z "$IMAGEVERSION" ]] && IMAGEVERSION=$(sbversion)
 
-docker images | awk -v repo="${REPOSITORY}" '$1 ~ repo { print $3; printf "%s:%s\n", $1, $2  }' | sort -u
+sbbuild "${DOCKERFILE}" "${IMAGENAME}" "${IMAGEVERSION}"
 
+docker tag "${IMAGENAME}:${IMAGEVERSION}" "${CONST_REGISTRY}/jdc/${IMAGENAME}:${IMAGEVERSION}"
+docker push "${CONST_REGISTRY}/jdc/${IMAGENAME}:${IMAGEVERSION}"
+
+script_exit "end"
 #------------------------------------------------------------------------------#
 #                                  The End                                     #
 #------------------------------------------------------------------------------#
