@@ -91,10 +91,13 @@ IMAGEVERSION=$1; shift
 [[ -z "$IMAGENAME" ]] && IMAGENAME=$(sbname)
 [[ -z "$IMAGEVERSION" ]] && IMAGEVERSION=$(sbversion)
 
-sbbuild "${DOCKERFILE}" "${IMAGENAME}" "${IMAGEVERSION}"
+sbbuild "${DOCKERFILE}" "${IMAGENAME}" "${IMAGEVERSION}" || exit 
 
 docker tag "${IMAGENAME}:${IMAGEVERSION}" "${CONST_REGISTRY}/jdc/${IMAGENAME}:${IMAGEVERSION}"
 docker push "${CONST_REGISTRY}/jdc/${IMAGENAME}:${IMAGEVERSION}"
+
+docker tag "${IMAGENAME}:${IMAGEVERSION}" "${CONST_REGISTRY}/jdc/${IMAGENAME}:latest"
+docker push "${CONST_REGISTRY}/jdc/${IMAGENAME}:latest"
 
 script_exit "end"
 #------------------------------------------------------------------------------#

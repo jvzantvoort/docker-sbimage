@@ -120,6 +120,9 @@ IMAGEVERSION=$1; shift
 [[ -z "$IMAGEVERSION" ]] && IMAGEVERSION=$(sbversion)
 
 [[ -e "${DOCKERFILE}" ]] || script_exit "${CONST_SCRIPTPATH} dockerfile ${DOCKERFILE} does not exist" 2
+logging_info "${LINENO}: dockerfile: ${DOCKERFILE}"
+logging_info "${LINENO}: name: ${IMAGENAME}"
+logging_info "${LINENO}: version: ${IMAGEVERSION}"
 
 mkstaging_area
 
@@ -131,10 +134,13 @@ cp "requirements.txt"  "${STAGING_AREA}/requirements.txt"
 cp "entrypoint.sh" "${STAGING_AREA}/entrypoint.sh"
 
 pushd "${STAGING_AREA}"
+set -xv
 docker build -t ${IMAGENAME}:${IMAGEVERSION} --file Dockerfile --rm .
+RETV=$?
 popd
 
 logging_info "end"
+exit $RETV
 #------------------------------------------------------------------------------#
 #                                  The End                                     #
 #------------------------------------------------------------------------------#
