@@ -59,7 +59,10 @@ logging_info "start"
 
 # setup path
 #---------------------------------------
-sphinx-build -b html -d /code/tmp/doctrees sphinxdoc /webroot || script_exit "failed" 1
+sphinx-build -b html \
+  -d /code/tmp/doctrees \
+  -N -q \
+  sphinxdoc /webroot || script_exit "failed" 1
 
 rm -rf /code/tmp/doctrees || script_exit "failed to cleanup" 3
 
