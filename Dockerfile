@@ -1,8 +1,5 @@
 FROM python:2.7.13
 
-ARG USER_UID=1085
-ARG USER_GID=1085
-
 LABEL \
   maintainer="john@vanzantvoort.org" \
   description="site builder production image"
@@ -18,8 +15,6 @@ RUN pip install -r /tmp/requirements.txt
 
 WORKDIR /code
 VOLUME ["/webroot"]
+VOLUME ["/output"]
 
-# From now on use this to execute
-USER ${USER_UID}:${USER_GID}
-
-ENTRYPOINT ["/code/entrypoint.sh"]
+CMD ["/bin/bash"]

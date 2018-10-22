@@ -57,14 +57,21 @@ function script_exit()
 
 logging_info "start"
 
+UID=$1; shift
+GID=$1; shift
+
 # setup path
 #---------------------------------------
 sphinx-build -b html \
-  -d /code/tmp/doctrees \
+  -d /tmp/doctrees \
   -N -q \
   sphinxdoc /webroot || script_exit "failed" 1
 
-rm -rf /code/tmp/doctrees || script_exit "failed to cleanup" 3
+chown -R "${UID}:${GID}" /webroot/*
+
+rm -rf /tmp/doctrees || script_exit "failed to cleanup" 3
+
+cp -rp  /webroot/* /output
 
 script_exit "end"
 #------------------------------------------------------------------------------#
