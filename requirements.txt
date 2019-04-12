@@ -31,7 +31,7 @@ GitPython==2.1.11
 idna==2.8
 imagesize==1.1.0
 invoke==1.2.0
-Jinja2==2.10
+Jinja2>=2.10
 lxml==4.3.2
 Markdown==3.0.1
 MarkupSafe==1.1.1
