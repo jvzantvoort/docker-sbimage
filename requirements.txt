@@ -63,11 +63,11 @@ six==1.12.0
 smmap2==2.0.5
 snowballstemmer==1.2.1
 Sphinx==1.8.5
-sphinx-asciidoc==1.0.2
+sphinx-asciidoc>=1.0.2
 sphinx-asdf==0.1.0rc2
 sphinx-automodapi==0.10
 sphinx-boost==0.0.3
-sphinx-bootstrap-theme==0.6.5
+sphinx-bootstrap-theme>=0.6.5
 sphinx-celery==1.4.6
 sphinx-confluence==0.0.3
 sphinx-copybutton==0.2.5
