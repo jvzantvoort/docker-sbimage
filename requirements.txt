@@ -58,7 +58,7 @@ pyquery==1.4.1
 python-dateutil==2.8.1
 python-twitter==3.5
 pytz==2019.3
-PyYAML==5.3
+PyYAML==5.4
 readme-renderer==24.0
 recommonmark==0.6.0
 requests==2.23.0
