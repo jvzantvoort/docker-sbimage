@@ -22,7 +22,7 @@ cryptography==3.3.2
 cssselect==1.1.0
 demjson==2.2.4
 distlib==0.3.0
-Django==2.2.26
+Django==2.2.27
 django-extensions==2.2.8
 django-unixdatetimefield==1.2.0
 docutils==0.16
