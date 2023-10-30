@@ -106,7 +106,7 @@ toml==0.10.0
 tqdm==4.43.0
 twine==1.15.0
 typing==3.7.4.1
-urllib3==1.26.17
+urllib3==1.26.18
 virtualenv==20.0.7
 webencodings==0.5.1
 Werkzeug==2.2.3
