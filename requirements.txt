@@ -18,7 +18,7 @@ check-manifest==0.41
 Click==7.0
 colorclass==2.2.0
 commonmark==0.9.1
-cryptography==41.0.4
+cryptography==41.0.6
 cssselect==1.1.0
 demjson==2.2.4
 distlib==0.3.0
