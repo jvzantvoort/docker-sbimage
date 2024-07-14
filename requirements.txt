@@ -28,7 +28,7 @@ cryptography==42.0.5
 cssselect==1.2.0
 dill==0.3.8
 distlib==0.3.8
-Django==5.0.3
+Django==5.0.7
 django-extensions==3.2.3
 django-unixdatetimefield==1.2.0
 docutils==0.20.1
