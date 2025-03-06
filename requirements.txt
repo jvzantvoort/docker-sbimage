@@ -50,7 +50,7 @@ jaraco.classes==3.4.0
 jaraco.context==6.0.1
 jaraco.functools==4.1.0
 jeepney==0.8.0
-Jinja2==3.1.5
+Jinja2==3.1.6
 keyring==25.4.1
 lxml==5.3.0
 Markdown==3.7
