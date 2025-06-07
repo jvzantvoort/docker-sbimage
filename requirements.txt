@@ -92,7 +92,7 @@ resolvelib==1.0.1
 rfc3986==2.0.0
 rich==13.9.2
 SecretStorage==3.3.3
-setuptools==75.1.0
+setuptools==78.1.1
 sigal==2.4
 six==1.16.0
 smmap==5.0.1
