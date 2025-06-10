@@ -85,7 +85,7 @@ pytz==2024.2
 PyYAML==6.0.2
 readme_renderer==44.0
 recommonmark==0.7.1
-requests==2.32.3
+requests==2.32.4
 requests-oauthlib==2.0.0
 requests-toolbelt==1.0.0
 resolvelib==1.0.1
