@@ -6,7 +6,6 @@ LABEL \
 
 # add the python requirements file
 ADD requirements.txt /tmp/requirements.txt
-ADD puppet-pygments-lexer-0.0.1.tar.gz /tmp
 
 # runtime dependencies
 RUN set -eux; \
@@ -19,9 +18,6 @@ RUN set -eux; \
 	rm -rf /var/lib/apt/lists/*
 
 RUN pip install -U pip && pip install -r /tmp/requirements.txt
-RUN cd /tmp/puppet-pygments-lexer-0.0.1; \
-    python setup.py install; \
-    cd /tmp
 
 WORKDIR /code
 VOLUME ["/webroot"]
