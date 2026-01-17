@@ -35,7 +35,7 @@ docutils==0.21.2
 elastic-transport==9.1.0
 elasticsearch==9.1.1
 feedgen==1.0.0
-filelock==3.20.1
+filelock==3.20.3
 future==1.0.0
 gitdb==4.0.12
 gitdb2==4.0.2
