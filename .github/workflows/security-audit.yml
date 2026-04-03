@@ -17,10 +17,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5.3.0
+        uses: actions/setup-python@v5
         with:
           python-version: '3.13'
 
@@ -52,7 +52,7 @@ jobs:
           fi
 
       - name: Upload safety report
-        uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: safety-report
@@ -64,7 +64,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Run Trivy on latest image
-        uses: aquasecurity/trivy-action@f1a18f09e4449814a6f1898e6ea53e6e1db26d12 # 0.29.0
+        uses: aquasecurity/trivy-action@master
         with:
           image-ref: 'ghcr.io/jvzantvoort/sbimage:latest'
           format: 'sarif'
@@ -72,13 +72,13 @@ jobs:
           severity: 'CRITICAL,HIGH,MEDIUM'
 
       - name: Upload Trivy results
-        uses: github/codeql-action/upload-sarif@ea9e4e37992a54ee68a9622e985e60c8e8f12d9f # v3.27.5
+        uses: github/codeql-action/upload-sarif@v3
         if: always()
         with:
           sarif_file: 'trivy-results.sarif'
 
       - name: Trivy summary report
-        uses: aquasecurity/trivy-action@f1a18f09e4449814a6f1898e6ea53e6e1db26d12 # 0.29.0
+        uses: aquasecurity/trivy-action@master
         with:
           image-ref: 'ghcr.io/jvzantvoort/sbimage:latest'
           format: 'table'

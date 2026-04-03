@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Delete old images
-        uses: actions/delete-package-versions@67875c2b57f39efe85a6de19b99e3f63b0f863eb # v5.1.0
+        uses: actions/delete-package-versions@v5
         with:
           package-name: 'sbimage'
           package-type: 'container'
