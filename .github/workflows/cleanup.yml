@@ -1,0 +1,33 @@
+name: Cleanup Old Images
+
+on:
+  schedule:
+    # Run every Sunday at 3 AM UTC
+    - cron: '0 3 * * 0'
+  workflow_dispatch:
+
+permissions:
+  packages: write
+  contents: read
+
+jobs:
+  cleanup:
+    name: Delete Old Container Images
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete old images
+        uses: actions/delete-package-versions@v5
+        with:
+          package-name: 'sbimage'
+          package-type: 'container'
+          min-versions-to-keep: 10
+          delete-only-untagged-versions: 'true'
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Summary
+        run: |
+          echo "## 🧹 Cleanup Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Cleaned up old untagged container images" >> $GITHUB_STEP_SUMMARY
+          echo "- Kept: Last 10 versions" >> $GITHUB_STEP_SUMMARY
+          echo "- Deleted: Untagged versions only" >> $GITHUB_STEP_SUMMARY
