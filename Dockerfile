@@ -8,6 +8,7 @@ LABEL \
 COPY requirements.txt /tmp/requirements.txt
 
 # runtime dependencies
+# hadolint ignore=DL3008
 RUN set -eux; \
 	apt-get update; \
 	apt-get install -y --no-install-recommends \
@@ -19,6 +20,7 @@ RUN set -eux; \
 	rm -rf /var/lib/apt/lists/*
 
 # Install Python packages with cache mount for faster rebuilds
+# hadolint ignore=DL3013
 RUN --mount=type=cache,target=/root/.cache/pip \
 	pip install --no-cache-dir -U pip setuptools wheel && \
 	pip install --no-cache-dir -r /tmp/requirements.txt && \
