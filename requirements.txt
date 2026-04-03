@@ -127,7 +127,7 @@ watchdog==6.0.0
 python-dateutil==2.9.0.post0
 pytz==2025.2
 babel==2.17.0
-Pygments==2.19.2
+Pygments==2.20.0
 feedgen==1.0.0
 
 # Version management (using bump2version, not legacy bumpversion)
