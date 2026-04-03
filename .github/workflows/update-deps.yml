@@ -1,0 +1,106 @@
+name: Update Dependencies
+
+on:
+  workflow_dispatch:
+    inputs:
+      update_type:
+        description: 'Update type'
+        required: true
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+        default: 'patch'
+  schedule:
+    # Run monthly on the 1st at 4 AM UTC
+    - cron: '0 4 1 * *'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update-python-deps:
+    name: Update Python Dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d # v5.1.0
+        with:
+          python-version: '3.13'
+
+      - name: Install pip-tools
+        run: pip install pip-tools pip-review
+
+      - name: Check for updates
+        id: check
+        run: |
+          pip-review --raw > updates.txt || true
+          
+          if [ -s updates.txt ]; then
+            echo "updates_available=true" >> $GITHUB_OUTPUT
+            echo "## 📦 Available Updates" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+            cat updates.txt >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "updates_available=false" >> $GITHUB_OUTPUT
+            echo "✅ All dependencies up to date" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Create update branch
+        if: steps.check.outputs.updates_available == 'true'
+        run: |
+          BRANCH_NAME="deps/python-updates-$(date +%Y%m%d)"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -b $BRANCH_NAME
+          echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
+
+      - name: Update dependencies (interactive review)
+        if: steps.check.outputs.updates_available == 'true'
+        run: |
+          # Show what would be updated
+          pip-review --auto >> pr-body.txt || true
+          
+          # You can manually review and update requirements.txt here
+          # For now, we'll just report what's available
+
+      - name: Create Pull Request
+        if: steps.check.outputs.updates_available == 'true'
+        uses: peter-evans/create-pull-request@6d6857d36972b65feb161a90e484f2984215f83e # v6.0.5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ env.BRANCH_NAME }}
+          title: "chore(deps): Update Python dependencies"
+          body: |
+            ## Python Dependency Updates
+            
+            This PR contains available Python package updates.
+            
+            **Update Type**: ${{ github.event.inputs.update_type || 'patch' }}
+            
+            ### Available Updates
+            
+            See the workflow summary for details.
+            
+            ### Checklist
+            - [ ] Review changelog for breaking changes
+            - [ ] Update requirements.txt manually if needed
+            - [ ] Test build: `buildah build .`
+            - [ ] Verify smoke tests pass
+            
+            ---
+            *Automated by GitHub Actions*
+          labels: |
+            dependencies
+            python
+            automated
+          draft: true
