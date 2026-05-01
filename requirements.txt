@@ -46,7 +46,7 @@ ansible==12.2.0
 ansible-docgen==1.0.0
 
 # Django
-Django==5.2.9
+Django==5.2.13
 django-extensions==4.1
 django-unixdatetimefield==1.2.0
 
