@@ -57,7 +57,7 @@ pillow==12.1.1
 olefile==0.47
 
 # Git integration
-GitPython==3.1.45
+GitPython==3.1.47
 gitdb==4.0.12
 smmap==5.0.2
 
