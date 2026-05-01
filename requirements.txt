@@ -73,7 +73,7 @@ urllib3==2.6.3
 oauthlib==3.3.1
 
 # Security and crypto
-cryptography==46.0.2
+cryptography==46.0.7
 bcrypt==5.0.0
 PyNaCl==1.6.2
 paramiko==4.0.0
