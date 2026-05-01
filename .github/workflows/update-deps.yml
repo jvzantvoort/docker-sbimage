@@ -41,8 +41,9 @@ jobs:
       - name: Check for updates
         id: check
         run: |
+          pip install -r requirements.txt --quiet
           pip-review --raw > updates.txt || true
-          
+
           if [ -s updates.txt ]; then
             echo "updates_available=true" >> $GITHUB_OUTPUT
             echo "## 📦 Available Updates" >> $GITHUB_STEP_SUMMARY
@@ -55,23 +56,39 @@ jobs:
             echo "✅ All dependencies up to date" >> $GITHUB_STEP_SUMMARY
           fi
 
-      - name: Create update branch
+      - name: Set branch name
         if: steps.check.outputs.updates_available == 'true'
-        run: |
-          BRANCH_NAME="deps/python-updates-$(date +%Y%m%d)"
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git checkout -b $BRANCH_NAME
-          echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
+        run: echo "BRANCH_NAME=deps/python-updates-$(date +%Y%m%d)" >> $GITHUB_ENV
 
-      - name: Update dependencies (interactive review)
+      - name: Update dependencies
         if: steps.check.outputs.updates_available == 'true'
         run: |
-          # Show what would be updated
-          pip-review --auto >> pr-body.txt || true
-          
-          # You can manually review and update requirements.txt here
-          # For now, we'll just report what's available
+          pip-review --auto
+          # Rewrite pinned versions in requirements.txt from the upgraded environment
+          python3 - <<'EOF'
+          import re, subprocess
+          result = subprocess.run(['pip', 'freeze'], capture_output=True, text=True, check=True)
+          installed = {}
+          for line in result.stdout.splitlines():
+              m = re.match(r'^([A-Za-z0-9][A-Za-z0-9._-]*)==([^=\s]+)$', line)
+              if m:
+                  installed[m.group(1).lower()] = m.group(2)
+          with open('requirements.txt') as f:
+              lines = f.readlines()
+          updated = []
+          pin_re = re.compile(r'^([A-Za-z0-9][A-Za-z0-9._-]*)==([^=\s]+)')
+          for line in lines:
+              m = pin_re.match(line)
+              if m:
+                  key = m.group(1).lower()
+                  if key in installed:
+                      line = pin_re.sub(
+                          lambda _: f"{m.group(1)}=={installed[key]}", line, count=1
+                      )
+              updated.append(line)
+          with open('requirements.txt', 'w') as f:
+              f.writelines(updated)
+          EOF
 
       - name: Create Pull Request
         if: steps.check.outputs.updates_available == 'true'
@@ -79,24 +96,25 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           branch: ${{ env.BRANCH_NAME }}
+          base: master
+          commit-message: "chore(deps): update Python dependencies"
           title: "chore(deps): Update Python dependencies"
           body: |
             ## Python Dependency Updates
-            
-            This PR contains available Python package updates.
-            
+
+            This PR updates pinned Python package versions in `requirements.txt`.
+
             **Update Type**: ${{ github.event.inputs.update_type || 'patch' }}
-            
-            ### Available Updates
-            
+
+            ### Updated Packages
+
             See the workflow summary for details.
-            
+
             ### Checklist
             - [ ] Review changelog for breaking changes
-            - [ ] Update requirements.txt manually if needed
             - [ ] Test build: `buildah build .`
             - [ ] Verify smoke tests pass
-            
+
             ---
             *Automated by GitHub Actions*
           labels: |
