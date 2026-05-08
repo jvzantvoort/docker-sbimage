@@ -91,7 +91,7 @@ Markdown==3.9
 bleach==6.2.0
 nh3==0.3.1
 webencodings==0.5.1
-mistune==3.1.4
+mistune==3.2.1
 
 # Parsing and scraping
 lxml==6.1.0
